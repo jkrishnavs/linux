@@ -69,7 +69,11 @@
 #define CCI_PA			0x10d20000
 #define SECURE_ACCESS_REG	0x8
 #define CHECK_CCI_SNOOP		(1 << 7)
+#ifdef CONFIG_SCHED_HMP
 extern void cci_snoop_enable(unsigned int sif);
+#else
+void cci_snoop_enable(unsigned int sif){}
+#endif
 
 static unsigned int read_mpidr(void)
 {
