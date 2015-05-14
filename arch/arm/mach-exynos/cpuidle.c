@@ -812,6 +812,9 @@ static void exynos_disable_c3_idle(bool disable)
 }
 #endif
 
+/**
+ * The cluster off would be required for cluster scheduling.
+**/
 static int can_enter_cluster_off(int cpu_id)
 {
 #if defined(CONFIG_SCHED_HMP)

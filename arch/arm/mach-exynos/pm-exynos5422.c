@@ -69,9 +69,19 @@
 #define CCI_PA			0x10d20000
 #define SECURE_ACCESS_REG	0x8
 #define CHECK_CCI_SNOOP		(1 << 7)
+
+/*
+ * HMP uses cci_snooping , why?
+ * What is the value that cci snooping return ?
+ * Parameter sif to cci, what does it indicate ? 
+*/
 #ifdef CONFIG_SCHED_HMP
 extern void cci_snoop_enable(unsigned int sif);
 #else
+/**
+ * Do we need to address cci_snooping ?
+**/
+
 void cci_snoop_enable(unsigned int sif){}
 #endif
 

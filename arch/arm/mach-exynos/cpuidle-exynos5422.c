@@ -684,6 +684,11 @@ static void exynos_disable_c3_idle(bool disable)
 
 static int can_enter_cluster_off(int cpu_id)
 {
+/**
+   What does disable_c3 means ?
+
+**/
+
 #if defined(CONFIG_SCHED_HMP)
 	ktime_t now = ktime_get();
 	struct clock_event_device *dev;

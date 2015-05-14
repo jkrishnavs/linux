@@ -495,6 +495,12 @@ bool exynos5422_is_last_core(unsigned int cpu)
 	unsigned int cpu_id;
 	struct cpumask mask, mask_and_online;
 
+/**
+ * cpumask the hmp_slow_cpumask : 
+ * cpumask the hmp_fast_cpumask :
+ * These are privided for cluster transfer of objects
+**/
+
 
 #ifdef CONFIG_SCHED_HMP
 
