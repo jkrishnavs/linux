@@ -291,7 +291,7 @@ void store_cpu_topology(unsigned int cpuid)
 }
 
 
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 
 static const char * const little_cores[] = {
 	"arm,cortex-a7",
@@ -394,7 +394,7 @@ void __init arch_get_hmp_domains(struct list_head *hmp_domains_list)
 	cpumask_and(&domain->cpus, cpu_online_mask, &domain->possible_cpus);
 	list_add(&domain->hmp_domains, hmp_domains_list);
 }
-#endif /* CONFIG_SCHED_HMP */
+#endif /* CONFIG_SCHED_HMP  || CONFIG_SCHED_CES */
 
 
 /*

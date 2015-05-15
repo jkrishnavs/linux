@@ -502,20 +502,13 @@ bool exynos5422_is_last_core(unsigned int cpu)
 **/
 
 
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 
 	if (cluster)
 		cpumask_copy(&mask, &hmp_slow_cpu_mask);
 	else
 		cpumask_copy(&mask, &hmp_fast_cpu_mask);
 
-#else
-	struct cpumask hmp_slow_cpu_mask;
-        struct cpumask hmp_fast_cpu_mask;
-        cpumask_clear(&hmp_slow_cpu_mask);
-        cpumask_clear(&hmp_fast_cpu_mask);
-        cpumask_parse(&hmp_slow_cpu_mask,"0-3");
-        cpumask_parse(&hmp_fast_cpu_mask,"4-7");
 #endif
 
 	cpumask_and(&mask_and_online, &mask, cpu_online_mask);
