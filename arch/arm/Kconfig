@@ -1571,7 +1571,7 @@ config SCHED_HMP_PRIO_FILTER_VAL
 
 config HMP_FAST_CPU_MASK
 	string "HMP scheduler fast CPU mask"
-	depends on SCHED_HMP
+	depends on SCHED_HMP || SCHED_CES
 	help
           Leave empty to use device tree information.
 	  Specify the cpuids of the fast CPUs in the system as a list string,
@@ -1579,7 +1579,7 @@ config HMP_FAST_CPU_MASK
 
 config HMP_SLOW_CPU_MASK
 	string "HMP scheduler slow CPU mask"
-	depends on SCHED_HMP
+	depends on SCHED_HMP || SCHED_CES
 	help
 	  Leave empty to use device tree information.
 	  Specify the cpuids of the slow CPUs in the system as a list string,

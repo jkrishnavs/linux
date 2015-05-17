@@ -98,3 +98,6 @@ obj-$(CONFIG_EXYNOS_CONTENT_PATH_PROTECTION) += secmem.o
 
 # HMP
 obj-$(CONFIG_SCHED_HMP)			+= core_sysfs.o
+
+#CES
+obj-$(CONFIG_SCHED_CES)			+= core_sysfs.o

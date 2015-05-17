@@ -814,10 +814,12 @@ static void exynos_disable_c3_idle(bool disable)
 
 /**
  * The cluster off would be required for cluster scheduling.
+ * jkrishnavs::We would like cluster off enabled for our CES sheduling as well
+ * So adding it to our common code.
 **/
 static int can_enter_cluster_off(int cpu_id)
 {
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP)  || defined(CONFIG_SCHED_CES)
 	ktime_t now = ktime_get();
 	struct clock_event_device *dev;
 	int cpu;
