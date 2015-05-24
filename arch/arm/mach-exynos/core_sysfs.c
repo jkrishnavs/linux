@@ -28,7 +28,7 @@ static struct bus_type core_subsys = {
 	.dev_name = "b.L",
 };
 
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 extern struct cpumask hmp_fast_cpu_mask;
 extern struct cpumask hmp_slow_cpu_mask;
 #endif
@@ -36,10 +36,10 @@ extern struct cpumask hmp_slow_cpu_mask;
 static unsigned int cpu_state(unsigned int cpu)
 {
 	unsigned int state, offset;
-#ifdef CONFIG_SCHED_HMP
+#ifdef CONFIG_SCHED_HMP  /** not required **/
 	unsigned int cluster, core;
-	core = MPIDR_AFFINITY_LEVEL(cpu_logical_map(cpu), 0);
-	cluster = MPIDR_AFFINITY_LEVEL(cpu_logical_map(cpu), 1);
+	core = MPIDR_AFFINITY_LEVEL(cpu_logical_map(cpu), 0);  /**  returns core itself? **/
+	cluster = MPIDR_AFFINITY_LEVEL(cpu_logical_map(cpu), 1); /**  returns 0? **/
 	offset = (cluster << 2) + core;
 #else
 	offset = cpu;
@@ -64,7 +64,7 @@ static ssize_t exynos5_core_status_show(struct kobject *kobj,
         return n;
 }
 
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)   /** debug functions for up and down migrations **/
 static ssize_t exynos5_boot_cluster_show(struct kobject *kobj,
 			struct kobj_attribute *attr, char *buf)
 {
@@ -132,7 +132,7 @@ static ssize_t exynos5_down_migrations_show(struct kobject *kobj,
 
 static struct kobj_attribute exynos5_core_status_attr =
         __ATTR(core_status, 0644, exynos5_core_status_show, NULL);
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 static struct kobj_attribute exynos5_boot_cluster_attr =
         __ATTR(boot_cluster, 0644, exynos5_boot_cluster_show, NULL);
 static struct kobj_attribute exynos5_big_threads_attr =
@@ -147,7 +147,7 @@ static struct kobj_attribute exynos5_down_migrations_attr =
 
 static struct attribute *exynos5_core_sysfs_attrs[] = {
         &exynos5_core_status_attr.attr,
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 	&exynos5_boot_cluster_attr.attr,
 	&exynos5_big_threads_attr.attr,
 	&exynos5_little_threads_attr.attr,
@@ -214,3 +214,43 @@ static int __init exynos5_core_info_early_init(void)
 
 early_initcall(exynos5_core_info_early_init);
 #endif
+
+#ifdef CONFIG_SCHED_CES
+
+static int ces_migration_notifier_handler(struct notifier_block *nb,
+                                         unsigned long cmd, void *data)
+{
+       switch (cmd) {
+       case CES_UP_MIGRATION:
+               up_migrations++;
+               break;
+       case CES_DOWN_MIGRATION:
+               down_migrations++;
+               break;
+       default:
+               break;
+       }
+
+       return 0;
+}
+
+static struct notifier_block ces_nb = {
+       .notifier_call = ces_migration_notifier_handler,
+};
+
+
+static int __init exynos5_core_info_early_init(void)
+{
+	int ret = 0;
+
+	ret = register_ces_task_migration_notifier(&hmp_nb);
+	if (ret)
+		pr_err("Fail to register  ces notification\n");
+
+	return ret;
+}
+
+early_initcall(exynos5_core_info_early_init);
+#endif
+
+
