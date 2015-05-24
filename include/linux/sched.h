@@ -105,8 +105,8 @@ extern unsigned long this_cpu_load(void);
 #ifdef CONFIG_SCHED_HMP
 extern unsigned long nr_running_cpu(unsigned int cpu);
 extern int register_hmp_task_migration_notifier(struct notifier_block *nb);
-#define HMP_UP_MIGRATION       0
-#define HMP_DOWN_MIGRATION     1
+#define HMP_UP_MIGRATION       0  /* jkrishnavs:: These are flags for marking migration from little->big*/
+#define HMP_DOWN_MIGRATION     1  /* jkrishnavs:: These are flags for marking migration from big-> little*/
 #endif
 
 
@@ -897,6 +897,11 @@ void free_sched_domains(cpumask_var_t doms[], unsigned int ndoms);
 bool cpus_share_cache(int this_cpu, int that_cpu);
 
 #ifdef CONFIG_SCHED_HMP
+/**
+cpumask :
+possible_cpus :
+hmp_domains  :
+**/
 struct hmp_domain {
 	struct cpumask cpus;
 	struct cpumask possible_cpus;
@@ -958,7 +963,7 @@ struct sched_avg {
 	unsigned long load_avg_contrib;
 	unsigned long load_avg_ratio;
 #ifdef CONFIG_SCHED_HMP
-	u64 hmp_last_up_migration;
+        u64 hmp_last_up_migration; /** Clock since last up migration and last down migration**/
 	u64 hmp_last_down_migration;
 #endif
 	u32 usage_avg_sum;
