@@ -214,3 +214,43 @@ static int __init exynos5_core_info_early_init(void)
 
 early_initcall(exynos5_core_info_early_init);
 #endif
+
+#ifdef CONFIG_SCHED_CES
+
+static int ces_migration_notifier_handler(struct notifier_block *nb,
+                                         unsigned long cmd, void *data)
+{
+       switch (cmd) {
+       case CES_UP_MIGRATION:
+               up_migrations++;
+               break;
+       case CES_DOWN_MIGRATION:
+               down_migrations++;
+               break;
+       default:
+               break;
+       }
+
+       return 0;
+}
+
+static struct notifier_block ces_nb = {
+       .notifier_call = ces_migration_notifier_handler,
+};
+
+
+static int __init exynos5_core_info_early_init(void)
+{
+	int ret = 0;
+
+	ret = register_ces_task_migration_notifier(&hmp_nb);
+	if (ret)
+		pr_err("Fail to register  ces notification\n");
+
+	return ret;
+}
+
+early_initcall(exynos5_core_info_early_init);
+#endif
+
+
