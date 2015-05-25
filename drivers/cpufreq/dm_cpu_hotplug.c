@@ -55,7 +55,7 @@ static bool in_low_power_mode = false;
 static bool in_suspend_prepared = false;
 static bool do_enable_hotplug = false;
 static bool do_disable_hotplug = false;
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES) /* for big cores hot lugging ?*/
 static int big_hotpluged = 0;
 #endif
 #ifdef CONFIG_ARM_EXYNOS_MP_CPUFREQ
@@ -82,7 +82,7 @@ static unsigned int delay = POLLING_MSEC;
 static unsigned int out_delay = POLLING_MSEC;
 static unsigned int in_delay = POLLING_MSEC;
 
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES) /* creation of work queue */
 static struct workqueue_struct *hotplug_wq;
 #endif
 static struct workqueue_struct *force_hotplug_wq;
@@ -144,7 +144,7 @@ static ssize_t store_enable_dm_hotplug(struct kobject *kobj, struct attribute *a
 		else
 			pr_info("%s: dynamic hotplug already enabled\n",
 					__func__);
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES) /*big cores already hot plugged?*/
 		if (big_hotpluged)
 			tmp = dynamic_hotplug(CMD_BIG_OUT);
 #endif
@@ -322,7 +322,7 @@ static int __ref __cpu_hotplug(bool out_flag, enum hotplug_cmd cmd)
 	if (exynos_dm_hotplug_disabled())
 		return 0;
 
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)   /* both ading and removing hotplugging*/
 	if (out_flag) {
 		if (do_disable_hotplug)
 			goto blk_out;
@@ -486,7 +486,7 @@ void force_dynamic_hotplug(bool out_flag)
 	}
 }
 
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES) /* hot plug big cores alone*/
 int big_cores_hotplug(bool out_flag)
 {
 	int ret = 0;
@@ -494,32 +494,32 @@ int big_cores_hotplug(bool out_flag)
 	mutex_lock(&big_hotplug_lock);
 
 	if (out_flag) {
-		if (big_hotpluged) {
-			big_hotpluged++;
-			goto out;
-		}
-
-		ret = dynamic_hotplug(CMD_BIG_OUT);
-		if (!ret)
-			big_hotpluged++;
+	  if (big_hotpluged) { /* if big cores are already hot plugged*/
+	    big_hotpluged++;
+	    goto out;
+	  }
+	  
+	  ret = dynamic_hotplug(CMD_BIG_OUT);  /* if not hot plug hot plug*/
+	  if (!ret) /* If hot pluggong sucessful mark it */
+	    big_hotpluged++;
 	} else {
-		if (WARN_ON(!big_hotpluged)) {
-			pr_err("%s: big cores already hotplug in\n",
-					__func__);
-			ret = -EINVAL;
-			goto out;
-		}
-
-		if (big_hotpluged > 1) {
-			big_hotpluged--;
-			goto out;
-		}
-
-		ret = dynamic_hotplug(CMD_BIG_IN);
-		if (!ret)
-			big_hotpluged--;
+	  if (WARN_ON(!big_hotpluged)) {
+	    pr_err("%s: big cores already hotplug in\n",
+		   __func__);
+	    ret = -EINVAL;
+	    goto out;
+	  }
+	  
+	  if (big_hotpluged > 1) {
+	    big_hotpluged--;
+	    goto out;
+	  }
+	  
+	  ret = dynamic_hotplug(CMD_BIG_IN);
+	  if (!ret)
+	    big_hotpluged--;
 	}
-
+	
 out:
 	mutex_unlock(&big_hotplug_lock);
 
@@ -742,6 +742,9 @@ static int on_run(void *data)
 #if defined(CONFIG_SCHED_HMP)
 		pr_info("big cores hotplug out : %d\n", big_hotpluged);
 #endif
+#if defined(CONFIG_SCHED_CES)/* append debug msg */
+		pr_info("ces scheduling big cores hotplug out: %d\n",big_hotpluged);
+#endif
 #endif
 		if (exynos_dm_hotplug_disabled())
 			continue;
@@ -842,7 +845,7 @@ static int __init dm_cpu_hotplug_init(void)
 	cpufreq_cpu_put(policy);
 #endif
 
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES) /* why use work Queue : to individually hot plug big and little*/
 	hotplug_wq = create_singlethread_workqueue("event-hotplug");
 	if (!hotplug_wq) {
 		ret = -ENOMEM;
@@ -870,8 +873,8 @@ static int __init dm_cpu_hotplug_init(void)
 
 	return ret;
 err_force_wq:
-#if defined(CONFIG_SCHED_HMP)
-	destroy_workqueue(hotplug_wq);
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES) /* destroy work Queue*/
+	destroy_workqueue(hotplug_wq); 
 err_wq:
 #endif
 #ifdef CONFIG_ARM_EXYNOS_MP_CPUFREQ
