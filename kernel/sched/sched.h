@@ -465,7 +465,16 @@ struct rq {
 	int push_cpu;
 	struct cpu_stop_work active_balance_work;
 #ifdef CONFIG_SCHED_HMP
-	struct task_struct *migrate_task;
+/* used mainly in fair.c, we also would want a forced migration*/
+  struct task_struct *migrate_task; 
+#endif
+#ifdef CONFIG_SCHED_CES
+  /**
+     Compiler enabled scheduling ::
+     each cpu will have a task migration required, 
+     as requested by the compiler.
+   */
+  struct task_struct *ces_migrate_task;
 #endif
 	/* cpu of this runqueue: */
 	int cpu;
@@ -646,10 +655,25 @@ static inline unsigned int group_first_cpu(struct sched_group *group)
 extern int group_balance_cpu(struct sched_group *sg);
 
 #ifdef CONFIG_SCHED_HMP
-static LIST_HEAD(hmp_domains);
+static LIST_HEAD(hmp_domains); /* A doubly linked list initialized with hmp_domains, also mainly used in fair.c*/
 DECLARE_PER_CPU(struct hmp_domain *, hmp_cpu_domain);
 #define hmp_cpu_domain(cpu)	(per_cpu(hmp_cpu_domain, (cpu)))
 #endif /* CONFIG_SCHED_HMP */
+
+/**
+ * We would also require to make such domain list per cpu which would give us
+ * better handle on load balancing and hot plugging 
+*/
+
+
+#ifdef CONFIG_SCHED_CES
+static LIST_HEAD(ces_domains); 
+DECLARE_PER_CPU(struct ces_domain *, ces_cpu_domain);
+#define ces_cpu_domain(cpu)	(per_cpu(ces_cpu_domain, (cpu)))
+#endif /* CONFIG_SCHED_CES */
+
+
+
 
 #endif /* CONFIG_SMP */
 
