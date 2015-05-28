@@ -1639,6 +1639,22 @@ static void __sched_fork(struct task_struct *p)
 		p->se.avg.usage_avg_sum = LOAD_AVG_MAX;
 	}
 #endif
+/**
+ * 
+_CES : Since this is a newly forked process, we also need to initialize
+ * all the feilds in task struct.
+ * Signinficance of 47742: It is the ,maximum possible avg load for config_smp and and fair group scheduling 
+                            Which is extended here.
+ * When parent->pid >2?
+**/
+#ifdef CONFIG_SCHED_CES
+	if (!p->parent || p->parent->pid > 2) {
+	  p->se.avg.ces_last_up_migration = 0;
+	  p->se.avg.ces_last_down_migration = 0;
+	}
+#endif
+
+
 #endif
 #ifdef CONFIG_SCHEDSTATS
 	memset(&p->se.statistics, 0, sizeof(p->se.statistics));
@@ -2064,7 +2080,7 @@ unsigned long nr_running(void)
 	return sum;
 }
 
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 unsigned long nr_running_cpu(unsigned int cpu)
 {
 	return cpu_rq(cpu)->nr_running;
@@ -3863,6 +3879,10 @@ __setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio)
 	if (rt_prio(p->prio)) {
 		p->sched_class = &rt_sched_class;
 #ifdef CONFIG_SCHED_HMP
+		/**
+		   _CES: HMP  when the priority changes, 
+		   they apply slow_cpu_mask why ?
+		 **/
 		if (cpumask_equal(&p->cpus_allowed, cpu_all_mask))
 			do_set_cpus_allowed(p, &hmp_slow_cpu_mask);
 #endif
