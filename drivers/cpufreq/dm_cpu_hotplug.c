@@ -55,7 +55,7 @@ static bool in_low_power_mode = false;
 static bool in_suspend_prepared = false;
 static bool do_enable_hotplug = false;
 static bool do_disable_hotplug = false;
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 static int big_hotpluged = 0;
 #endif
 #ifdef CONFIG_ARM_EXYNOS_MP_CPUFREQ
@@ -82,7 +82,7 @@ static unsigned int delay = POLLING_MSEC;
 static unsigned int out_delay = POLLING_MSEC;
 static unsigned int in_delay = POLLING_MSEC;
 
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 static struct workqueue_struct *hotplug_wq;
 #endif
 static struct workqueue_struct *force_hotplug_wq;
@@ -144,7 +144,7 @@ static ssize_t store_enable_dm_hotplug(struct kobject *kobj, struct attribute *a
 		else
 			pr_info("%s: dynamic hotplug already enabled\n",
 					__func__);
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 		if (big_hotpluged)
 			tmp = dynamic_hotplug(CMD_BIG_OUT);
 #endif
@@ -322,7 +322,7 @@ static int __ref __cpu_hotplug(bool out_flag, enum hotplug_cmd cmd)
 	if (exynos_dm_hotplug_disabled())
 		return 0;
 
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 	if (out_flag) {
 		if (do_disable_hotplug)
 			goto blk_out;
@@ -486,7 +486,7 @@ void force_dynamic_hotplug(bool out_flag)
 	}
 }
 
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 int big_cores_hotplug(bool out_flag)
 {
 	int ret = 0;
@@ -739,7 +739,7 @@ static int on_run(void *data)
 				cur_load_freq, prev_cmd, exe_cmd);
 		pr_info("lcd is on : %d, low power mode = %d, dm_hotplug disable = %d\n",
 				lcd_is_on, in_low_power_mode, exynos_dm_hotplug_disabled());
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 		pr_info("big cores hotplug out : %d\n", big_hotpluged);
 #endif
 #endif
@@ -842,7 +842,7 @@ static int __init dm_cpu_hotplug_init(void)
 	cpufreq_cpu_put(policy);
 #endif
 
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 	hotplug_wq = create_singlethread_workqueue("event-hotplug");
 	if (!hotplug_wq) {
 		ret = -ENOMEM;
@@ -870,7 +870,7 @@ static int __init dm_cpu_hotplug_init(void)
 
 	return ret;
 err_force_wq:
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 	destroy_workqueue(hotplug_wq);
 err_wq:
 #endif
