@@ -4278,6 +4278,7 @@ out_put_task:
 	return retval;
 }
 
+
 static int get_user_cpu_mask(unsigned long __user *user_mask_ptr, unsigned len,
 			     struct cpumask *new_mask)
 {
@@ -4373,6 +4374,51 @@ SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
 
 	return ret;
 }
+
+
+#ifdef CONFIG_SCHED_CES
+
+/**
+ * sys_ces_upmigration - set the cpu affinity of a process
+ * @pid: pid of the process
+ * @len: length in bytes of the bitmask pointed to by user_mask_ptr
+ * @user_mask_ptr: user-space pointer to the new cpu mask
+ */
+SYSCALL_DEFINE3(ces_upmigration, pid_t, pid, unsigned int, len,
+		unsigned long __user *, user_mask_ptr){
+  int retVal = 0;
+  printk("upmigration");
+  return retVal;
+}
+
+long ces_upmigration(pid_t pid, struct cpumask *mask){
+  long retVal = 0;
+  printk("upmigration called");
+  return retVal;
+}
+
+/**
+ * sys_ces_downmigration - set the cpu affinity of a process
+ * @pid: pid of the process
+ * @len: length in bytes of the bitmask pointed to by user_mask_ptr
+ * @user_mask_ptr: user-space pointer to the new cpu mask
+ */
+SYSCALL_DEFINE3(ces_downmigration, pid_t, pid, unsigned int, len,
+		unsigned long __user *, user_mask_ptr){
+  int retVal = 0;
+  printk("downmigration called");
+  return retVal;
+}
+
+long ces_downmigration(pid_t pid, struct cpumask *mask){
+  long retVal = 0;
+  printk("downmigration called");
+  return retVal;
+}
+
+
+#endif
+
 
 /**
  * sys_sched_yield - yield the current processor to other threads.

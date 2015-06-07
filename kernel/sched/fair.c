@@ -45,6 +45,34 @@
 
 #include "sched.h"
 
+#ifdef CONFIG_CES_SCHED_FIXUP
+int get_hmp_boost(){
+    return 0;
+}
+/* checks are such that is set_hmp_boost() < 0 : failed to hmp_boost */
+int set_hmp_boost(int enable){
+    return -1;
+}
+int set_hmp_boostpulse(int duration){
+    return 0;
+}
+
+int set_hmp_up_threshold(int value){
+  return 0;
+}
+int set_hmp_down_threshold(int value){
+  return 0;
+}
+#endif /* CONFIG_CES_SCHED_FIXUP */
+
+#ifdef CONFIG_SCHED_CES
+static ATOMIC_NOTIFIER_HEAD(ces_task_migration_notifier);
+int register_ces_task_migration_notifier(struct notifier_block *nb)
+{
+  return atomic_notifier_chain_register(&ces_task_migration_notifier, nb);
+}
+#endif /* CONFIG_SCHED_CES */
+
 
 /*
  * Targeted preemption latency for CPU-bound tasks:
@@ -3732,6 +3760,8 @@ unsigned int hmp_up_prio = NICE_TO_PRIO(CONFIG_SCHED_HMP_PRIO_FILTER_VAL);
 unsigned int hmp_next_up_threshold = 4096;
 unsigned int hmp_next_down_threshold = 4096;
 
+
+//#ifdef CONFIG_SCHED_CES
 static inline int hmp_boost(void)
 {
 	u64 now = ktime_to_us(ktime_get());
@@ -3747,6 +3777,7 @@ static inline int hmp_boost(void)
 
 	return ret;
 }
+//#endif
 
 static unsigned int hmp_up_migration(int cpu, int *target_cpu, struct sched_entity *se);
 static unsigned int hmp_down_migration(int cpu, struct sched_entity *se);

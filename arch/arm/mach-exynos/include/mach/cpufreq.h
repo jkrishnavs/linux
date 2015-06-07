@@ -178,7 +178,10 @@ extern void (*disable_c3_idle)(bool disable);
 #ifdef CONFIG_EXYNOS5_DYNAMIC_CPU_HOTPLUG
 extern void force_dynamic_hotplug(bool out_flag);
 #endif
-#if defined(CONFIG_SCHED_HMP) && defined(CONFIG_EXYNOS5_DYNAMIC_CPU_HOTPLUG)
+#if defined(CONFIG_SCHED_HMP) && defined(CONFIG_EXYNOS5_DYNAMIC_CPU_HOTPLUG) 
+int big_cores_hotplug(bool out_flag);
+void event_hotplug_in(void);
+#elif defined(CONFIG_SCHED_CES) && defined(CONFIG_EXYNOS5_DYNAMIC_CPU_HOTPLUG)
 int big_cores_hotplug(bool out_flag);
 void event_hotplug_in(void);
 #else

@@ -906,7 +906,7 @@ void free_sched_domains(cpumask_var_t doms[], unsigned int ndoms);
 
 bool cpus_share_cache(int this_cpu, int that_cpu);
 
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 /**
 cpumask :
 possible_cpus :
@@ -2696,6 +2696,12 @@ static inline void set_task_cpu(struct task_struct *p, unsigned int cpu)
 
 extern long sched_setaffinity(pid_t pid, const struct cpumask *new_mask);
 extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
+
+
+#ifdef CONFIG_SCHED_CES
+extern long ces_upmigration(pid_t pid,struct cpumask *newmask);
+extern long ces_downmigration(pid_t pid,struct cpumask *newmask);
+#endif
 
 #ifdef CONFIG_CGROUP_SCHED
 extern struct task_group root_task_group;

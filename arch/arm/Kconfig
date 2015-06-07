@@ -1543,6 +1543,15 @@ config SCHED_CES
        help
           Experimental scheduler optimization for hetrogeneous platforms.
 	  The compiler will have handles to hook on and provide better scheduling techniques.
+
+config CES_SCHED_FIXUP
+       bool "CES Scheduling Temp Fixup"
+       depends on SCHED_CES
+       help
+	  These are codes which are ment to be temporary fixup for SCHED_CES
+          These consists of small fix up codes to help SCHED_CES that are temporary 
+	  and will be removed in long run.
+
  
 config SCHED_HMP
 	bool "(EXPERIMENTAL) Heterogenous multiprocessor scheduling"

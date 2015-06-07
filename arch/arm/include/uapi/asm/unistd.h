@@ -407,6 +407,11 @@
 #define __NR_kcmp			(__NR_SYSCALL_BASE+378)
 #define __NR_finit_module		(__NR_SYSCALL_BASE+379)
 
+#ifdef CONFIG_SCHED_CES
+#define __NR_ces_upmigration            (__NR_SYSCALL_BASE+380)
+#define __NR_ces_downmigration          (__NR_SYSCALL_BASE+381) 
+#endif
+
 /*
  * This may need to be greater than __NR_last_syscall+1 in order to
  * account for the padding in the syscall table

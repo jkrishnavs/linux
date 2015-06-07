@@ -36,7 +36,7 @@ extern struct cpumask hmp_slow_cpu_mask;
 static unsigned int cpu_state(unsigned int cpu)
 {
 	unsigned int state, offset;
-#ifdef CONFIG_SCHED_HMP  /** not required **/
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)  /** not required **/
 	unsigned int cluster, core;
 	core = MPIDR_AFFINITY_LEVEL(cpu_logical_map(cpu), 0);  /**  returns core itself? **/
 	cluster = MPIDR_AFFINITY_LEVEL(cpu_logical_map(cpu), 1); /**  returns 0? **/
@@ -243,7 +243,7 @@ static int __init exynos5_core_info_early_init(void)
 {
 	int ret = 0;
 
-	ret = register_ces_task_migration_notifier(&hmp_nb);
+	ret = register_ces_task_migration_notifier(&ces_nb);
 	if (ret)
 		pr_err("Fail to register  ces notification\n");
 

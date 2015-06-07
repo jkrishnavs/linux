@@ -76,7 +76,7 @@
  * Parameter sif to cci, what does it indicate ? 
  * adding it to common code
 */
-#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SHED_CES)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 extern void cci_snoop_enable(unsigned int sif);
 #else
 /**
