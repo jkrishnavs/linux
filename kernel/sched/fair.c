@@ -65,12 +65,103 @@ int set_hmp_down_threshold(int value){
 }
 #endif /* CONFIG_CES_SCHED_FIXUP */
 
+
 #ifdef CONFIG_SCHED_CES
+static struct task_struct *task_of(struct sched_entity *se);
+static inline unsigned int hmp_cpu_is_fastest(int cpu);
+static inline unsigned int hmp_cpu_is_slowest(int cpu);
+static inline struct hmp_domain *hmp_slower_domain(int cpu);
+static inline struct hmp_domain *hmp_faster_domain(int cpu);
+
+/** 
+   F1.a function similar to hmp_down_migration
+   Here we are notgoing to check for current cpu utilization of the thread.
+   * we need to check the load balancing of the target cpu.
+   compared to other live LITTLE CPU.
+   Some hacks might be needed. For now we can start with assuming
+   cpu 0 would be used for system threads.
+   So target cpus 1,2,3
+**/
+static int allow_ces__down_migration(int cpu, int *target_cpu, struct sched_entity *se){
+	struct task_struct *p = task_of(se);
+	u64 now;
+
+	if (hmp_cpu_is_slowest(cpu))
+		return 0;
+
+	if (cpumask_intersects(&hmp_slower_domain(cpu)->cpus,
+			       tsk_cpus_allowed(p))) {
+		return 1;
+	}
+	return 0;
+}
+/**
+   F2. function similar to hmp_up_migration
+   Here again we are not going to check for cpu utilization of the thread.
+   * we need to check the load balancing of the target cpu.
+   compared to other live LITTLE CPU.
+   
+**/
+static int allow_ces_up_migration(int cpu, int *target_cpu, struct sched_entity *se){
+  /* TODO :
+     See how to get the task struct from process id.
+   */
+  	struct task_struct *p = task_of(se);
+	int temp_target_cpu;
+	u64 now;
+
+	/* if already in fastest cpu return.*/
+	if (hmp_cpu_is_fastest(cpu))
+		return 0;
+
+	/* No need to check for system avg load and ratio or about the previous
+	   up migration.*/
+
+	/*
+	 * Jkrishnavs : As an initial hack we will use hmp_domain_min_load to find
+	 * the relatively idle cpu.
+	 *  hmp_domain_min_load only returns 0 for an
+	 * idle CPU or 1023 for any partly-busy one.
+	 * Be explicit about requirement for an idle CPU.
+	 */
+
+	if (hmp_domain_min_load(hmp_faster_domain(cpu), &temp_target_cpu,
+			tsk_cpus_allowed(p)) == 0 && temp_target_cpu != NR_CPUS) {
+		if (target_cpu)
+			*target_cpu = temp_target_cpu;
+		return 1;
+	}
+  return 0;
+}
+/* For up and down migration  if we find that the current selected cpu,
+   is not sutable because of load imbalance find the next cpu in the 
+   current domain and return that.*/
+static int get_nextcpu_in_domain(hmp_cpu_domain domain,in cpu){
+
+}
+
+static int find_appropriate_cpu_for_migration(){
+
+}
+
 static ATOMIC_NOTIFIER_HEAD(ces_task_migration_notifier);
 int register_ces_task_migration_notifier(struct notifier_block *nb)
 {
   return atomic_notifier_chain_register(&ces_task_migration_notifier, nb);
 }
+
+static int ces_up_migration_noti(void)
+{
+	return atomic_notifier_call_chain(&ces_task_migration_notifier,
+			CES_UP_MIGRATION, NULL);
+}
+
+static int ces_down_migration_noti(void)
+{
+	return atomic_notifier_call_chain(&ces_task_migration_notifier,
+			CES_DOWN_MIGRATION, NULL);
+}
+
 #endif /* CONFIG_SCHED_CES */
 
 
@@ -3644,7 +3735,10 @@ static struct hmp_domain *hmp_get_hmp_domain_for_cpu(int cpu)
 	}
 	return NULL;
 }
+#endif /* CONFIG_SCHED_HMP */
 
+
+#if defined(CONFIG_SCHED_HMP)  || defined(CONFIG_SCHED_CES)
 static void hmp_online_cpu(int cpu)
 {
 	struct hmp_domain *domain = hmp_get_hmp_domain_for_cpu(cpu);
@@ -3661,6 +3755,10 @@ static void hmp_offline_cpu(int cpu)
 		cpumask_clear_cpu(cpu, &domain->cpus);
 }
 
+#endif /* CONFIG_SCHED_HMP || CONFIG_SCHED_CES */
+
+
+#ifdef CONFIG_SCHED_HMP
 /*
  * Needed to determine heaviest tasks etc.
  */
@@ -3761,7 +3859,6 @@ unsigned int hmp_next_up_threshold = 4096;
 unsigned int hmp_next_down_threshold = 4096;
 
 
-//#ifdef CONFIG_SCHED_CES
 static inline int hmp_boost(void)
 {
 	u64 now = ktime_to_us(ktime_get());
@@ -3777,12 +3874,18 @@ static inline int hmp_boost(void)
 
 	return ret;
 }
-//#endif
 
 static unsigned int hmp_up_migration(int cpu, int *target_cpu, struct sched_entity *se);
 static unsigned int hmp_down_migration(int cpu, struct sched_entity *se);
 static inline unsigned int hmp_domain_min_load(struct hmp_domain *hmpd,
 						int *min_cpu, struct cpumask *affinity);
+
+
+
+#endif /*CONFIG_SCHED_HMP*/
+
+
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 
 /* Check if cpu is in fastest hmp_domain */
 static inline unsigned int hmp_cpu_is_fastest(int cpu)
@@ -3861,6 +3964,11 @@ static inline unsigned int hmp_select_slower_cpu(struct task_struct *tsk,
 
 	return lowest_cpu;
 }
+#endif /* CONFIG_SCHED_HMP || CONFIG_SCHED_CES */
+
+
+
+#ifdef CONFIG_SCHED_HMP
 
 static inline void hmp_next_up_delay(struct sched_entity *se, int cpu)
 {
@@ -4160,6 +4268,10 @@ static int hmp_attr_init(void)
 late_initcall(hmp_attr_init);
 #endif /* CONFIG_HMP_VARIABLE_SCALE */
 
+#endif /*CONFIG_SCHED_HMP*/
+
+ 
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 /*
  * return the load of the lowest-loaded CPU in a given HMP domain
  * min_cpu optionally points to an int to receive the CPU.
@@ -4286,7 +4398,7 @@ static inline unsigned int hmp_offload_down(int cpu, struct sched_entity *se)
 	}
 	return NR_CPUS;
 }
-#endif /* CONFIG_SCHED_HMP */
+#endif /* CONFIG_SCHED_HMP  || CONFIG_SCHED_CES*/
 
 /*
  * sched_balance_self: balance the current task (running on cpu) in domains
@@ -6829,6 +6941,8 @@ static unsigned int hmp_down_migration(int cpu, struct sched_entity *se)
 	}
 	return 0;
 }
+
+/**************************************************** UP UNTIL HERE ***********************************************************/
 
 /*
  * hmp_can_migrate_task - may task p from runqueue rq be migrated to this_cpu?
