@@ -4377,45 +4377,28 @@ SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
 
 
 #ifdef CONFIG_SCHED_CES
-
 /**
  * sys_ces_upmigration - set the cpu affinity of a process
  * @pid: pid of the process
- * @len: length in bytes of the bitmask pointed to by user_mask_ptr
- * @user_mask_ptr: user-space pointer to the new cpu mask
  */
-SYSCALL_DEFINE3(ces_upmigration, pid_t, pid, unsigned int, len,
-		unsigned long __user *, user_mask_ptr){
+SYSCALL_DEFINE1(ces_upmigration, pid_t, pid){
   int retVal = 0;
-  printk("upmigration");
+  printk("upmigration called");
+  retVal =  ces_upmigration(pid);
   return retVal;
 }
 
-long ces_upmigration(pid_t pid, struct cpumask *mask){
-  long retVal = 0;
-  printk("upmigration called");
-  return retVal;
-}
 
 /**
  * sys_ces_downmigration - set the cpu affinity of a process
  * @pid: pid of the process
- * @len: length in bytes of the bitmask pointed to by user_mask_ptr
- * @user_mask_ptr: user-space pointer to the new cpu mask
  */
-SYSCALL_DEFINE3(ces_downmigration, pid_t, pid, unsigned int, len,
-		unsigned long __user *, user_mask_ptr){
+SYSCALL_DEFINE1(ces_downmigration, pid_t, pid){
   int retVal = 0;
   printk("downmigration called");
+  retVal = ces_downmigration(pid);
   return retVal;
 }
-
-long ces_downmigration(pid_t pid, struct cpumask *mask){
-  long retVal = 0;
-  printk("downmigration called");
-  return retVal;
-}
-
 
 #endif
 

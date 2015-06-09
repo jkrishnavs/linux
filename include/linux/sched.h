@@ -923,7 +923,7 @@ extern int set_hmp_boostpulse(int duration);
 extern int get_hmp_boost(void);
 extern int set_hmp_up_threshold(int value);
 extern int set_hmp_down_threshold(int value);
-#endif /* CONFIG_SCHED_HMP */
+#endif /* CONFIG_SCHED_HMP || CONFIG_SCHED_CES*/
 #else /* CONFIG_SMP */
 
 struct sched_domain_attr;
@@ -2699,8 +2699,10 @@ extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
 
 
 #ifdef CONFIG_SCHED_CES
-extern long ces_upmigration(pid_t pid,struct cpumask *newmask);
-extern long ces_downmigration(pid_t pid,struct cpumask *newmask);
+/* Only process id needs to be provided. The kernel will 
+find an appropriate cpu and perform the migration.*/
+extern long ces_upmigration(pid_t pid);
+extern long ces_downmigration(pid_t pid);
 #endif
 
 #ifdef CONFIG_CGROUP_SCHED

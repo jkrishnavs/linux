@@ -72,6 +72,9 @@ static inline unsigned int hmp_cpu_is_fastest(int cpu);
 static inline unsigned int hmp_cpu_is_slowest(int cpu);
 static inline struct hmp_domain *hmp_slower_domain(int cpu);
 static inline struct hmp_domain *hmp_faster_domain(int cpu);
+static inline unsigned int hmp_domain_min_load(struct hmp_domain *hmpd,
+					       int *min_cpu, struct cpumask *affinity);
+static struct hmp_domain *hmp_get_hmp_domain_for_cpu(int cpu);
 
 /** 
    F1.a function similar to hmp_down_migration
@@ -84,8 +87,8 @@ static inline struct hmp_domain *hmp_faster_domain(int cpu);
 **/
 static int allow_ces__down_migration(int cpu, int *target_cpu, struct sched_entity *se){
 	struct task_struct *p = task_of(se);
-	u64 now;
-
+	//	u64 now;
+       
 	if (hmp_cpu_is_slowest(cpu))
 		return 0;
 
@@ -108,7 +111,7 @@ static int allow_ces_up_migration(int cpu, int *target_cpu, struct sched_entity 
    */
   	struct task_struct *p = task_of(se);
 	int temp_target_cpu;
-	u64 now;
+	//	u64 now;
 
 	/* if already in fastest cpu return.*/
 	if (hmp_cpu_is_fastest(cpu))
@@ -133,15 +136,41 @@ static int allow_ces_up_migration(int cpu, int *target_cpu, struct sched_entity 
 	}
   return 0;
 }
-/* For up and down migration  if we find that the current selected cpu,
+/* 
+   For up and down migration  if we find that the current selected cpu,
    is not sutable because of load imbalance find the next cpu in the 
-   current domain and return that.*/
-static int get_nextcpu_in_domain(hmp_cpu_domain domain,in cpu){
+   current domain and return that.
+*/
+static int get_nextcpu_in_domain(struct hmp_domain* domain,int cpu){
+  int retVal = NR_CPUS;
 
+  
+  return retVal;
+}
+/*
+  For any up and down migration we would require to find an ample target cpu 
+  for our migration to to be possible. If we are unable to find a good target CPU,
+  ie if all the CPUs in target domain(big/little) is busy then we will return
+  NR_CPUS
+*/
+
+int find_appropriate_cpu_for_migration(struct hmp_domain* domain){
+  int retVal = NR_CPUS;
+  
+
+  return retVal;
 }
 
-static int find_appropriate_cpu_for_migration(){
+long ces_upmigration(pid_t pid){
+  int retVal=0;
 
+  return retVal;
+}
+
+long ces_downmigration(pid_t pid){
+  int retVal =0;
+  
+  return retVal;
 }
 
 static ATOMIC_NOTIFIER_HEAD(ces_task_migration_notifier);
@@ -3676,7 +3705,7 @@ done:
 	return target;
 }
 
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 /*
  * Heterogenous multiprocessor (HMP) optimizations
  *
@@ -3687,6 +3716,7 @@ done:
  */
 DEFINE_PER_CPU(struct hmp_domain *, hmp_cpu_domain);
 static const int hmp_max_tasks=5;
+
 
 extern void __init arch_get_hmp_domains(struct list_head *hmp_domains_list);
 
@@ -3722,7 +3752,9 @@ static int __init hmp_cpu_mask_setup(void)
 
 	return 1;
 }
+//#endif /* CONFIG_SCHED_HMP || CONFIG_SCHED_CES */
 
+//#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES) 
 static struct hmp_domain *hmp_get_hmp_domain_for_cpu(int cpu)
 {
 	struct hmp_domain *domain;
@@ -3735,7 +3767,7 @@ static struct hmp_domain *hmp_get_hmp_domain_for_cpu(int cpu)
 	}
 	return NULL;
 }
-#endif /* CONFIG_SCHED_HMP */
+#endif /* CONFIG_SCHED_HMP || CONFIG_SCHED_CES */
 
 
 #if defined(CONFIG_SCHED_HMP)  || defined(CONFIG_SCHED_CES)
@@ -4308,6 +4340,8 @@ static inline unsigned int hmp_domain_min_load(struct hmp_domain *hmpd,
 
 	for_each_cpu_mask(cpu, temp_cpumask) {
 		avg = &cpu_rq(cpu)->avg;
+ 
+#ifndef CONFIG_SCHED_CES
 		/* used for both up and down migration */
 		curr_last_migration = avg->hmp_last_up_migration ?
 			avg->hmp_last_up_migration : avg->hmp_last_down_migration;
@@ -4335,6 +4369,7 @@ static inline unsigned int hmp_domain_min_load(struct hmp_domain *hmpd,
 			min_cpu_runnable_temp = cpu;
 			min_target_last_migration = curr_last_migration;
 		}
+#endif /* !(CONFIG_SCHED_CES)*/
 	}
 
 	if (min_cpu)

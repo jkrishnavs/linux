@@ -373,6 +373,17 @@ __SYSCALL(__NR_sched_getparam, sys_sched_getparam)
 #define __NR_sched_setaffinity 122
 __SC_COMP(__NR_sched_setaffinity, sys_sched_setaffinity, \
 	  compat_sys_sched_setaffinity)
+
+#ifdef CONFIG_SCHED_CES
+/* ces up and down migration earlier ther were 274 calls 
+   adding to it. Also updating total calls to 276
+*/
+#define __NR_ces_upmigration 274
+__SYSCALL(__NR_ces_upmigration, sys_ces_upmigration)
+#define __NR_ces_downmigration 275
+__SYSCALL(__NR_ces_downmigration, sys_ces_downmigration)
+#endif
+
 #define __NR_sched_getaffinity 123
 __SC_COMP(__NR_sched_getaffinity, sys_sched_getaffinity, \
 	  compat_sys_sched_getaffinity)
@@ -694,8 +705,11 @@ __SYSCALL(__NR_kcmp, sys_kcmp)
 __SYSCALL(__NR_finit_module, sys_finit_module)
 
 #undef __NR_syscalls
+#ifdef CONFIG_SCHED_CES
+#define __NR_syscalls 276
+#else
 #define __NR_syscalls 274
-
+#endif
 /*
  * All syscalls below here should go away really,
  * these are provided for both review and as a porting
