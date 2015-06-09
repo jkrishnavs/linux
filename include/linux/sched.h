@@ -2699,8 +2699,8 @@ extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
 
 
 #ifdef CONFIG_SCHED_CES
-extern long ces_upmigration(pid_t pid,struct cpumask *newmask);
-extern long ces_downmigration(pid_t pid,struct cpumask *newmask);
+extern long ces_upmigration(pid_t pid,const struct cpumask *newmask);
+extern long ces_downmigration(pid_t pid,const struct cpumask *newmask);
 #endif
 
 #ifdef CONFIG_CGROUP_SCHED
