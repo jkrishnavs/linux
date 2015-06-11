@@ -4384,7 +4384,10 @@ SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
 SYSCALL_DEFINE1(ces_upmigration, pid_t, pid){
   int retVal = 0;
   printk("upmigration called");
-  retVal =  ces_upmigration(pid);
+  /*get task struct from pid*/
+  struct task_struct * cur_task = find_process_by_pid(pid);
+
+  retVal =  ces_upmigration(cur_task);
   return retVal;
 }
 
@@ -4396,7 +4399,8 @@ SYSCALL_DEFINE1(ces_upmigration, pid_t, pid){
 SYSCALL_DEFINE1(ces_downmigration, pid_t, pid){
   int retVal = 0;
   printk("downmigration called");
-  retVal = ces_downmigration(pid);
+  struct task_struct * cur_task = find_process_by_pid(pid);
+  retVal = ces_downmigration(cur_task);
   return retVal;
 }
 
@@ -4976,6 +4980,13 @@ fail:
 	raw_spin_unlock(&p->pi_lock);
 	return ret;
 }
+
+#ifdef CONFIG_SCHED_CES
+
+int ces_migrate_task(struct task_struct *p, int src_cpu, int dest_cpu){
+  return __migrate_task(p,src_cpu,dest_cpu);
+}
+#endif /*CONFIG_SCHED_CES*/
 
 /*
  * migration_cpu_stop - this will be executed by a highprio stopper thread

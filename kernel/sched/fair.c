@@ -63,10 +63,6 @@ int set_hmp_up_threshold(int value){
 int set_hmp_down_threshold(int value){
   return 0;
 }
-#endif /* CONFIG_CES_SCHED_FIXUP */
-
-
-#ifdef CONFIG_SCHED_CES
 static struct task_struct *task_of(struct sched_entity *se);
 static inline unsigned int hmp_cpu_is_fastest(int cpu);
 static inline unsigned int hmp_cpu_is_slowest(int cpu);
@@ -75,6 +71,15 @@ static inline struct hmp_domain *hmp_faster_domain(int cpu);
 static inline unsigned int hmp_domain_min_load(struct hmp_domain *hmpd,
 					       int *min_cpu, struct cpumask *affinity);
 static struct hmp_domain *hmp_get_hmp_domain_for_cpu(int cpu);
+static inline unsigned int hmp_select_faster_cpu(struct task_struct *tsk,
+						 int cpu);
+static inline unsigned int hmp_select_slower_cpu(struct task_struct *tsk,
+						 int cpu);
+
+#endif /* CONFIG_CES_SCHED_FIXUP */
+
+
+#ifdef CONFIG_SCHED_CES
 
 /** 
    F1.a function similar to hmp_down_migration
@@ -85,18 +90,18 @@ static struct hmp_domain *hmp_get_hmp_domain_for_cpu(int cpu);
    cpu 0 would be used for system threads.
    So target cpus 1,2,3
 **/
-static int allow_ces__down_migration(int cpu, int *target_cpu, struct sched_entity *se){
-	struct task_struct *p = task_of(se);
+static int allow_ces_down_migration(int cpu, int target_cpu, struct task_struct *p){
 	//	u64 now;
-       
-	if (hmp_cpu_is_slowest(cpu))
-		return 0;
-
-	if (cpumask_intersects(&hmp_slower_domain(cpu)->cpus,
-			       tsk_cpus_allowed(p))) {
-		return 1;
-	}
-	return 0;
+  if(cpu == target_cpu)
+    return 0;
+  if (hmp_cpu_is_slowest(cpu))
+    return 0;
+  
+  if (cpumask_intersects(&hmp_slower_domain(cpu)->cpus,
+			 tsk_cpus_allowed(p))) {
+    return 1;
+  }
+  return 0;
 }
 /**
    F2. function similar to hmp_up_migration
@@ -105,20 +110,21 @@ static int allow_ces__down_migration(int cpu, int *target_cpu, struct sched_enti
    compared to other live LITTLE CPU.
    
 **/
-static int allow_ces_up_migration(int cpu, int *target_cpu, struct sched_entity *se){
-  /* TODO :
-     See how to get the task struct from process id.
-   */
-  	struct task_struct *p = task_of(se);
-	int temp_target_cpu;
+static int allow_ces_up_migration(int cpu, int * target_cpu, struct task_struct *p){
+  	int temp_target_cpu;
 	//	u64 now;
+
+	
 
 	/* if already in fastest cpu return.*/
 	if (hmp_cpu_is_fastest(cpu))
 		return 0;
 
+
 	/* No need to check for system avg load and ratio or about the previous
 	   up migration.*/
+	if(*target_cpu ==cpu)
+	  return 0;
 
 	/*
 	 * Jkrishnavs : As an initial hack we will use hmp_domain_min_load to find
@@ -136,41 +142,47 @@ static int allow_ces_up_migration(int cpu, int *target_cpu, struct sched_entity 
 	}
   return 0;
 }
-/* 
-   For up and down migration  if we find that the current selected cpu,
-   is not sutable because of load imbalance find the next cpu in the 
-   current domain and return that.
-*/
-static int get_nextcpu_in_domain(struct hmp_domain* domain,int cpu){
-  int retVal = NR_CPUS;
-
-  
-  return retVal;
-}
 /*
-  For any up and down migration we would require to find an ample target cpu 
-  for our migration to to be possible. If we are unable to find a good target CPU,
-  ie if all the CPUs in target domain(big/little) is busy then we will return
-  NR_CPUS
+  ces uppmigration code.
+  1. check if upmigration is possible.
+  If yes,
+  2. do upmigration.
+
 */
-
-int find_appropriate_cpu_for_migration(struct hmp_domain* domain){
-  int retVal = NR_CPUS;
-  
-
-  return retVal;
+long ces_upmigration(struct task_struct* p){
+  int ret_Val=0;
+  /*get current cpu of the task. defined in include/linux/sched.h */
+  int cur_cpu = task_cpu(p);/*find current cpu */
+  /* get target cpu, in the required domain
+     which is relatively free */  
+  int target_cpu =  hmp_select_faster_cpu(p,cur_cpu);
+  if(allow_ces_up_migration(cur_cpu,&target_cpu,p)){
+      /* we are goinng to usethe help of 
+        int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
+        in core.c for this
+      */
+      ret_Val = ces_migrate_task(p,cur_cpu,target_cpu);
+    }
+    if(ret_Val == 0){
+      printk("upmigration failed\n");    
+    }
+  return ret_Val;
 }
 
-long ces_upmigration(pid_t pid){
-  int retVal=0;
-
-  return retVal;
-}
-
-long ces_downmigration(pid_t pid){
-  int retVal =0;
-  
-  return retVal;
+long ces_downmigration(struct task_struct * p){
+ int ret_Val=0;
+  /*get current cpu of the task. defined in include/linux/sched.h */
+  int cur_cpu = task_cpu(p);/*find current cpu */
+  /* get target cpu, in the required domain
+     which is relatively free */  
+  int target_cpu =  hmp_select_slower_cpu(p,cur_cpu);
+  if(allow_ces_down_migration(cur_cpu,target_cpu,p)){
+    ret_Val = ces_migrate_task(p,cur_cpu,target_cpu);
+    }
+    if(ret_Val == 0){
+      printk("upmigration failed\n");    
+    }
+    return ret_Val;
 }
 
 static ATOMIC_NOTIFIER_HEAD(ces_task_migration_notifier);

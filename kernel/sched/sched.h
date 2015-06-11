@@ -475,7 +475,7 @@ struct rq {
      as requested by the compiler.
    */
   struct task_struct *ces_migrate_task;
-#endif
+#endif /* CONFIG_SCED_CES */
 	/* cpu of this runqueue: */
 	int cpu;
 	int online;
@@ -664,13 +664,14 @@ DECLARE_PER_CPU(struct hmp_domain *, hmp_cpu_domain);
  * We would also require to make such domain list per cpu which would give us
  * better handle on load balancing and hot plugging 
 */
-
-
+/*
 #ifdef CONFIG_SCHED_CES
 static LIST_HEAD(ces_domains); 
 DECLARE_PER_CPU(struct ces_domain *, ces_cpu_domain);
 #define ces_cpu_domain(cpu)	(per_cpu(ces_cpu_domain, (cpu)))
-#endif /* CONFIG_SCHED_CES */
+#endif 
+
+ */
 
 
 

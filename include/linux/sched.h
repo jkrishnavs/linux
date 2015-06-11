@@ -109,20 +109,22 @@ extern int register_hmp_task_migration_notifier(struct notifier_block *nb);
 #define HMP_DOWN_MIGRATION     1  
 #endif
 
-/**CES: declaring some functions useful for CE scheduling**/
+/** CES: declaring some functions useful for CE scheduling **/
 #ifdef CONFIG_SCHED_CES
 /** CES: gives the number of processes running in current core, I think**/
 extern unsigned long nr_running_cpu(unsigned int cpu);
-/**CES: task notifier registration for CES migration**/
+/** CES: task notifier registration for CES migration **/
+
 extern int register_ces_task_migration_notifier(struct notifier_block *nb);
+
 #define CES_UP_MIGRATION       0 
 #define CES_DOWN_MIGRATION     1
-#endif
+#endif /*CONFIG_SCHED_CES */
 
 
 extern void calc_global_load(unsigned long ticks);
 extern void update_cpu_load_nohz(void);
-
+extern int ces_migrate_task(struct task_struct *p, int src_cpu, int dest_cpu);
 /* Notifier for when a task gets migrated to a new CPU */
 struct task_migration_notifier {
 	struct task_struct *task;
@@ -2701,8 +2703,8 @@ extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
 #ifdef CONFIG_SCHED_CES
 /* Only process id needs to be provided. The kernel will 
 find an appropriate cpu and perform the migration.*/
-extern long ces_upmigration(pid_t pid);
-extern long ces_downmigration(pid_t pid);
+extern long ces_upmigration(struct task_struct* p);
+extern long ces_downmigration(struct task_struct* p);
 #endif
 
 #ifdef CONFIG_CGROUP_SCHED
