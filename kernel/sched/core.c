@@ -4383,9 +4383,10 @@ SYSCALL_DEFINE3(sched_getaffinity, pid_t, pid, unsigned int, len,
  */
 SYSCALL_DEFINE1(ces_upmigration, pid_t, pid){
   int retVal = 0;
+  struct task_struct *cur_task;
   printk("upmigration called");
   /*get task struct from pid*/
-  struct task_struct * cur_task = find_process_by_pid(pid);
+  cur_task = find_process_by_pid(pid);
 
   retVal =  ces_upmigration(cur_task);
   return retVal;
@@ -4398,8 +4399,9 @@ SYSCALL_DEFINE1(ces_upmigration, pid_t, pid){
  */
 SYSCALL_DEFINE1(ces_downmigration, pid_t, pid){
   int retVal = 0;
+  struct task_struct * cur_task;
   printk("downmigration called");
-  struct task_struct * cur_task = find_process_by_pid(pid);
+  cur_task = find_process_by_pid(pid);
   retVal = ces_downmigration(cur_task);
   return retVal;
 }

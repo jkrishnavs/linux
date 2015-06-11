@@ -46,16 +46,6 @@
 #include "sched.h"
 
 #ifdef CONFIG_CES_SCHED_FIXUP
-int get_hmp_boost(){
-    return 0;
-}
-/* checks are such that is set_hmp_boost() < 0 : failed to hmp_boost */
-int set_hmp_boost(int enable){
-    return -1;
-}
-int set_hmp_boostpulse(int duration){
-    return 0;
-}
 
 int set_hmp_up_threshold(int value){
   return 0;
@@ -3888,11 +3878,15 @@ static struct sched_entity *hmp_get_lightest_task(struct sched_entity* se, int m
  * hmp_next_up_threshold: Delay before next up migration (1024 ~= 1 ms)
  * hmp_next_down_threshold: Delay before next down migration (1024 ~= 1 ms)
  */
+#endif /*CONFIG_SCHED_HMP*/
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 static int hmp_boostpulse_duration = 1000000; /* microseconds */
 static u64 hmp_boostpulse_endtime;
 static int hmp_boost_val;
 static int hmp_boostpulse;
 static DEFINE_RAW_SPINLOCK(hmp_boost_lock);
+#endif /* CONFIG_SCHED_HMP || CONFIG_SCHED_CES */
+#ifdef CONFIG_SCHED_HMP
 
 #define BOOT_BOOST_DURATION 40000000 /* microseconds */
 
@@ -3901,8 +3895,9 @@ unsigned int hmp_up_prio = NICE_TO_PRIO(CONFIG_SCHED_HMP_PRIO_FILTER_VAL);
 #endif
 unsigned int hmp_next_up_threshold = 4096;
 unsigned int hmp_next_down_threshold = 4096;
+#endif /* CONFIG_SCHED_HMP */
 
-
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 static inline int hmp_boost(void)
 {
 	u64 now = ktime_to_us(ktime_get());
@@ -3918,7 +3913,9 @@ static inline int hmp_boost(void)
 
 	return ret;
 }
+#endif /*CONFIG_SCHED_HMP || CONFIG_SCHED_CES*/
 
+#ifdef CONFIG_SCHED_HMP
 static unsigned int hmp_up_migration(int cpu, int *target_cpu, struct sched_entity *se);
 static unsigned int hmp_down_migration(int cpu, struct sched_entity *se);
 static inline unsigned int hmp_domain_min_load(struct hmp_domain *hmpd,
@@ -4148,7 +4145,10 @@ static int hmp_down_threshold_from_sysfs(int value)
 
 	return 0;
 }
-
+#endif /* CONFIG_HMP_VARIABLE_SCALE */
+#endif /* CONFIG_SCHED_HMP */
+ 
+#if (defined(CONFIG_SCHED_HMP) && defined(CONFIG_HMP_VARIABLE_SCALE)) || defined(CONFIG_SCHED_CES)
 static int hmp_boostpulse_from_sysfs(int value)
 {
 	unsigned long flags;
@@ -4192,6 +4192,7 @@ static int hmp_boost_from_sysfs(int value)
 	return ret;
 }
 
+
 int set_hmp_boost(int enable)
 {
 	return hmp_boost_from_sysfs(enable);
@@ -4219,7 +4220,10 @@ int get_hmp_boost(void)
 {
 	return hmp_boost();
 }
+#endif /*  (defined(CONFIG_SCHED_HMP) && defined(CONFIG_HMP_VARIABLE_SCALE)) || defined(CONFIG_SCHED_CES) */
 
+#ifdef CONFIG_SCHED_HMP    
+#ifdef CONFIG_HMP_VARIABLE_SCALE
 int set_hmp_up_threshold(int value)
 {
 	return hmp_up_threshold_from_sysfs(value);
@@ -4337,10 +4341,12 @@ static inline unsigned int hmp_domain_min_load(struct hmp_domain *hmpd,
 {
 	int cpu;
 	int min_cpu_runnable_temp = NR_CPUS;
+#ifndef CONFIG_CES_SCHED_FIXUP
 	u64 min_target_last_migration = ULLONG_MAX;
 	u64 curr_last_migration;
-	unsigned long min_runnable_load = INT_MAX;
 	unsigned long contrib;
+#endif /* ! CONFIG_CES_SCHED_FIXUP */
+	unsigned long min_runnable_load = INT_MAX;
 	struct sched_avg *avg;
 	struct cpumask temp_cpumask;
 	/*
@@ -4353,7 +4359,7 @@ static inline unsigned int hmp_domain_min_load(struct hmp_domain *hmpd,
 	for_each_cpu_mask(cpu, temp_cpumask) {
 		avg = &cpu_rq(cpu)->avg;
  
-#ifndef CONFIG_SCHED_CES
+#ifndef CONFIG_CES_SCHED_FIXUP
 		/* used for both up and down migration */
 		curr_last_migration = avg->hmp_last_up_migration ?
 			avg->hmp_last_up_migration : avg->hmp_last_down_migration;
@@ -4381,7 +4387,7 @@ static inline unsigned int hmp_domain_min_load(struct hmp_domain *hmpd,
 			min_cpu_runnable_temp = cpu;
 			min_target_last_migration = curr_last_migration;
 		}
-#endif /* !(CONFIG_SCHED_CES)*/
+#endif /* !(CONFIG_CES_SCHED_FIXUP)*/
 	}
 
 	if (min_cpu)
