@@ -139,7 +139,7 @@ static int allow_ces_up_migration(int cpu, int * target_cpu, struct task_struct 
   2. do upmigration.
 
 */
-long ces_upmigration(struct task_struct* p){
+long ces_upmigration(struct task_struct* p,unsigned int load){
   int ret_Val=0;
   /*get current cpu of the task. defined in include/linux/sched.h */
   int cur_cpu = task_cpu(p);/*find current cpu */
@@ -159,7 +159,7 @@ long ces_upmigration(struct task_struct* p){
   return ret_Val;
 }
 
-long ces_downmigration(struct task_struct * p){
+long ces_downmigration(struct task_struct * p, unsigned int load){
  int ret_Val=0;
   /*get current cpu of the task. defined in include/linux/sched.h */
   int cur_cpu = task_cpu(p);/*find current cpu */

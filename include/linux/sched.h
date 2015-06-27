@@ -2701,10 +2701,9 @@ extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
 
 
 #ifdef CONFIG_SCHED_CES
-/* Only process id needs to be provided. The kernel will 
-find an appropriate cpu and perform the migration.*/
-extern long ces_upmigration(struct task_struct* p);
-extern long ces_downmigration(struct task_struct* p);
+/* Only process id and predicted load to be provided.*/
+extern long ces_upmigration(struct task_struct* p,unsigned int load);
+extern long ces_downmigration(struct task_struct* p,unsigned int load);
 #endif
 
 #ifdef CONFIG_CGROUP_SCHED
