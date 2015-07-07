@@ -4393,6 +4393,25 @@ SYSCALL_DEFINE2(ces_upmigration, pid_t, pid, unsigned int, load){
 }
 
 
+
+/**
+ * ces_loadmigration - set the cpu of a proces based on the 
+ * load factor specified by input load. The load actor can vary from 
+ * 0 to 1024.
+ * @pid: pid of the process
+ */
+SYSCALL_DEFINE2(ces_loadmigration, pid_t, pid, unsigned int, load){
+  int retVal = 0;
+  struct task_struct *cur_task;
+  printk("loadmigration called");
+  /*get task struct from pid*/
+  cur_task = find_process_by_pid(pid);
+
+  retVal =  ces_upmigration(cur_task,load);
+  return retVal;
+}
+
+
 /**
  * sys_ces_downmigration - set the cpu affinity of a process
  * @pid: pid of the process

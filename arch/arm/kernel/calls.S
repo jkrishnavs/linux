@@ -393,6 +393,7 @@
 #ifdef CONFIG_SCHED_CES
 		CALL(sys_ces_upmigration)
 		CALL(sys_ces_downmigration)
+	        CALL(sys_ces_loadmigration)
 #endif	
 #ifndef syscalls_counted
 .equ syscalls_padding, ((NR_syscalls + 3) & ~3) - NR_syscalls

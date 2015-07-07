@@ -2704,6 +2704,7 @@ extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
 /* Only process id and predicted load to be provided.*/
 extern long ces_upmigration(struct task_struct* p,unsigned int load);
 extern long ces_downmigration(struct task_struct* p,unsigned int load);
+extern long ces_loadmigration(struct task_struct* p,unsigned int load);
 #endif
 
 #ifdef CONFIG_CGROUP_SCHED

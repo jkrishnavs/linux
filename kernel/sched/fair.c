@@ -175,6 +175,26 @@ long ces_downmigration(struct task_struct * p, unsigned int load){
     return ret_Val;
 }
 
+int LOADBALANCE = 700;
+
+long ces_loadgmmigration(struct task_struct * p, unsigned int load){
+ int ret_Val=0;
+  /*get current cpu of the task. defined in include/linux/sched.h */
+  int cur_cpu = task_cpu(p);/*find current cpu */
+  /* get target cpu, in the required domain
+     which is relatively free */  
+  int target_cpu =  hmp_select_slower_cpu(p,cur_cpu);
+  if(allow_ces_down_migration(cur_cpu,target_cpu,p)){
+    ret_Val = ces_migrate_task(p,cur_cpu,target_cpu);
+    }
+    if(ret_Val == 0){
+      printk("upmigration failed\n");    
+    }
+    return ret_Val;
+}
+
+
+
 static ATOMIC_NOTIFIER_HEAD(ces_task_migration_notifier);
 int register_ces_task_migration_notifier(struct notifier_block *nb)
 {
