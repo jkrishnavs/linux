@@ -4392,6 +4392,17 @@ SYSCALL_DEFINE2(ces_upmigration, pid_t, pid, unsigned int, load){
   return retVal;
 }
 
+/**
+ * ces_updateloadfactor : sets a user defined load factor balancing
+ * load factor supplied as user input.
+ * @loadfactor : new load factor
+ */
+SYSCALL_DEFINE1(ces_loadfactorupdate, unsigned int, loadfactor){
+  int retVal = 0;
+  retVal  = setnewloadfactor(loadfactor);
+  return retVal;
+}
+
 
 
 /**
