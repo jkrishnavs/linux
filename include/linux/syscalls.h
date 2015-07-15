@@ -289,7 +289,7 @@ asmlinkage long sys_sched_getaffinity(pid_t pid, unsigned int len,
 #ifdef CONFIG_SCHED_CES
 asmlinkage long sys_ces_upmigration(pid_t pid,unsigned int load);
 asmlinkage long sys_ces_downmigration(pid_t pid,unsigned int load);
-asmlinkage long sys_ces_loadmigration(pit_t pid,unsigned int load);
+asmlinkage long sys_ces_loadmigration(pid_t pid,unsigned int load);
 asmlinkage long sys_ces_updateloadfactor(unsigned int newloadfactor);
 #endif 
 asmlinkage long sys_sched_yield(void);

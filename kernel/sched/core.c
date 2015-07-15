@@ -4397,9 +4397,9 @@ SYSCALL_DEFINE2(ces_upmigration, pid_t, pid, unsigned int, load){
  * load factor supplied as user input.
  * @loadfactor : new load factor
  */
-SYSCALL_DEFINE1(ces_loadfactorupdate, unsigned int, loadfactor){
+SYSCALL_DEFINE1(ces_updateloadfactor, unsigned int, loadfactor){
   int retVal = 0;
-  retVal  = setnewloadfactor(loadfactor);
+  retVal  = ces_updateloadfactor(loadfactor);
   return retVal;
 }
 
@@ -4418,7 +4418,7 @@ SYSCALL_DEFINE2(ces_loadmigration, pid_t, pid, unsigned int, load){
   /*get task struct from pid*/
   cur_task = find_process_by_pid(pid);
 
-  retVal =  ces_upmigration(cur_task,load);
+  retVal =  ces_loadmigration(cur_task,load);
   return retVal;
 }
 
