@@ -2702,11 +2702,11 @@ extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
 
 #ifdef CONFIG_SCHED_CES
 /* Only process id and predicted load to be provided.*/
-extern long ces_upmigration_execute(struct task_struct* p,unsigned int load);
-extern long ces_downmigration_execute(struct task_struct* p,unsigned int load);
-extern long ces_loadmigration_execute(struct task_struct* p,unsigned int load);
-extern long ces_updateloadfactor_execute(unsigned int newloadfactor);
-extern long ces_scheduleequalworkload_execute(struct task_struct* p,unsigned int load);
+extern long ces_upmigration_do(struct task_struct* p,unsigned int load);
+extern long ces_downmigration_do(struct task_struct* p,unsigned int load);
+extern long ces_loadmigration_do(struct task_struct* p,unsigned int load);
+extern long ces_updateloadfactor_do(unsigned int newloadfactor);
+extern long ces_scheduleequalworkload_do(struct task_struct* p,unsigned int load);
 #endif
 
 #ifdef CONFIG_CGROUP_SCHED
