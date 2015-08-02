@@ -291,6 +291,7 @@ asmlinkage long sys_ces_upmigration(pid_t pid,unsigned int load);
 asmlinkage long sys_ces_downmigration(pid_t pid,unsigned int load);
 asmlinkage long sys_ces_loadmigration(pid_t pid,unsigned int load);
 asmlinkage long sys_ces_updateloadfactor(unsigned int newloadfactor);
+asmlinkage long sys_ces_scheduleequalworkload(pid_t pid, unsigned int load);
 #endif 
 asmlinkage long sys_sched_yield(void);
 asmlinkage long sys_sched_get_priority_max(int policy);

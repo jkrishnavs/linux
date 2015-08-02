@@ -4388,9 +4388,25 @@ SYSCALL_DEFINE2(ces_upmigration, pid_t, pid, unsigned int, load){
   /*get task struct from pid*/
   cur_task = find_process_by_pid(pid);
 
-  retVal =  ces_upmigration(cur_task,load);
+  retVal =  ces_upmigration_do(cur_task,load);
   return retVal;
 }
+
+/**
+ * sys_ces_upmigration - set the cpu affinity of a process
+ * @pid: pid of the process
+ */
+SYSCALL_DEFINE2(ces_scheduleequalworkload, pid_t, pid, unsigned int, load){
+  int retVal = 0;
+  struct task_struct *cur_task;
+  printk("upmigration called");
+  /*get task struct from pid*/
+  cur_task = find_process_by_pid(pid);
+
+  retVal =  ces_scheduleequalworkload_do(cur_task,load);
+  return retVal;
+}
+
 
 /**
  * ces_updateloadfactor : sets a user defined load factor balancing
@@ -4399,7 +4415,7 @@ SYSCALL_DEFINE2(ces_upmigration, pid_t, pid, unsigned int, load){
  */
 SYSCALL_DEFINE1(ces_updateloadfactor, unsigned int, loadfactor){
   int retVal = 0;
-  retVal  = ces_updateloadfactor(loadfactor);
+  retVal  = ces_updateloadfactor_do(loadfactor);
   return retVal;
 }
 
@@ -4418,7 +4434,7 @@ SYSCALL_DEFINE2(ces_loadmigration, pid_t, pid, unsigned int, load){
   /*get task struct from pid*/
   cur_task = find_process_by_pid(pid);
 
-  retVal =  ces_loadmigration(cur_task,load);
+  retVal =  ces_loadmigration_do(cur_task,load);
   return retVal;
 }
 
@@ -4432,7 +4448,7 @@ SYSCALL_DEFINE2(ces_downmigration, pid_t, pid,unsigned int, load){
   struct task_struct * cur_task;
   printk("downmigration called");
   cur_task = find_process_by_pid(pid);
-  retVal = ces_downmigration(cur_task,load);
+  retVal = ces_downmigration_do(cur_task,load);
   return retVal;
 }
 

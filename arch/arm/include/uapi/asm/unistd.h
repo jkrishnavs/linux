@@ -412,6 +412,7 @@
 #define __NR_ces_downmigration          (__NR_SYSCALL_BASE+381) 
 #define __NR_ces_loadmigration          (__NR_SYSCALL_BASE+382)
 #define __NR_ces_updateloadfactor       (__NR_SYSCALL_BASE+383)
+#define __NR_ces_scheduleequalworkload  (__NR_SYSCALL_BASE+384)
 #endif
 
 /*

@@ -16,7 +16,7 @@
 #include <uapi/asm/unistd.h>
 
 #ifdef CONFIG_SCHED_CES
-#define __NR_syscalls  (384)
+#define __NR_syscalls  (388)
 #else
 #define __NR_syscalls  (380)
 #endif

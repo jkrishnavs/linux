@@ -71,6 +71,8 @@ static inline unsigned int hmp_select_slower_cpu(struct task_struct *tsk,
 
 #ifdef CONFIG_SCHED_CES
 
+
+
 /** 
    F1.a function similar to hmp_down_migration
    Here we are notgoing to check for current cpu utilization of the thread.
@@ -139,7 +141,7 @@ static int allow_ces_up_migration(int cpu, int * target_cpu, struct task_struct 
   2. do upmigration.
 
 */
-long ces_upmigration(struct task_struct* p,unsigned int load){
+long ces_upmigration_do(struct task_struct* p,unsigned int load){
   int ret_Val=0;
   /*get current cpu of the task. defined in include/linux/sched.h */
   int cur_cpu = task_cpu(p);/*find current cpu */
@@ -159,7 +161,23 @@ long ces_upmigration(struct task_struct* p,unsigned int load){
   return ret_Val;
 }
 
-long ces_downmigration(struct task_struct * p, unsigned int load){
+
+long ces_downmigration_do(struct task_struct * p, unsigned int load){
+ int ret_Val=0;
+  /*get current cpu of the task. defined in include/linux/sched.h */
+  int cur_cpu = task_cpu(p);/*find current cpu */
+  /* get target cpu, in the required domain
+     which is relatively free */  
+  int target_cpu =  hmp_select_slower_cpu(p,cur_cpu);
+  if(allow_ces_down_migration(cur_cpu,target_cpu,p)){
+    ret_Val = ces_migrate_task(p,cur_cpu,target_cpu);
+    }
+    if(ret_Val == 0){
+      printk("downmigration failed\n");    
+    }
+    return ret_Val;
+}
+long ces_scheduleequalworkload_do(struct task_struct* p,unsigned int load){
  int ret_Val=0;
   /*get current cpu of the task. defined in include/linux/sched.h */
   int cur_cpu = task_cpu(p);/*find current cpu */
@@ -175,7 +193,6 @@ long ces_downmigration(struct task_struct * p, unsigned int load){
     return ret_Val;
 }
 
-
 /*
  * defines the ces load balancing factor. If the  
  * if the input load balancing value is higher than 
@@ -185,14 +202,14 @@ long ces_downmigration(struct task_struct * p, unsigned int load){
 
 int ces_loadbalancing_threshold = 512;
 int allow_update_loadfactor = 1; /* keep a flag, just in case*/
-long ces_updateloadfactor(unsigned int loadfactor){
+long ces_updateloadfactor_do(unsigned int loadfactor){
   if(allow_update_loadfactor !=0){
     ces_loadbalancing_threshold = loadfactor;
   }
   return 0;
 }
 
-long ces_loadmigration(struct task_struct * p, unsigned int load){
+long ces_loadmigration_do(struct task_struct * p, unsigned int load){
  int ret_Val=0;
   int cur_cpu = task_cpu(p);/*find current cpu */
   /* get target cpu, in the required domain
