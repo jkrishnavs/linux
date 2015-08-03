@@ -100,4 +100,4 @@ obj-$(CONFIG_EXYNOS_CONTENT_PATH_PROTECTION) += secmem.o
 obj-$(CONFIG_SCHED_HMP)			+= core_sysfs.o
 
 #CES
-obj-$(CONFIG_SCHED_CES_FIXUP)			+= core_sysfs.o
+obj-$(CONFIG_CES_SCHED_FIXUP)		+= core_sysfs.o

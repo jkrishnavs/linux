@@ -36,7 +36,7 @@ static int __init irq_affinity_setup(char *str)
 }
 __setup("irqaffinity=", irq_affinity_setup);
 
-#if defined(CONFIG_SCHED_HMP) || defined(config_SCHED_CES)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 extern struct cpumask hmp_slow_cpu_mask;
 #endif
 static void __init init_irq_default_affinity(void)
@@ -50,7 +50,7 @@ static void __init init_irq_default_affinity(void)
    The interrupt request default affinity is set to slow cpu 
    Why?
 **/
-#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES_FIXUP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 		cpumask_copy(irq_default_affinity, &hmp_slow_cpu_mask);
 #else
 		cpumask_setall(irq_default_affinity);

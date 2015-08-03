@@ -1640,12 +1640,12 @@ static void __sched_fork(struct task_struct *p)
 	}
 #endif
 
-#ifdef CONFIG_SCHED_CES_FIXUP
+#ifdef CONFIG_CES_SCHED_FIXUP
 	schedule_bigcore_ifavailable(p);
 #endif
 /**
  * 
-_CES : Since this is a newly forked process, we also need to initialize
+ CONFIG_SCHED_CES : Since this is a newly forked process, we also need to initialize
  * all the feilds in task struct.
  * Signinficance of 47742: It is the ,maximum possible avg load for config_smp and and fair group scheduling 
                             Which is extended here.

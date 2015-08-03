@@ -200,7 +200,9 @@ static int hmp_migration_notifier_handler(struct notifier_block *nb,
 static struct notifier_block hmp_nb = {
        .notifier_call = hmp_migration_notifier_handler,
 };
+#endif 
 
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 static int __init exynos5_core_info_early_init(void)
 {
 	int ret = 0;
@@ -237,20 +239,6 @@ static int ces_migration_notifier_handler(struct notifier_block *nb,
 static struct notifier_block ces_nb = {
        .notifier_call = ces_migration_notifier_handler,
 };
-
-
-static int __init exynos5_core_info_early_init(void)
-{
-	int ret = 0;
-
-	ret = register_ces_task_migration_notifier(&ces_nb);
-	if (ret)
-		pr_err("Fail to register  ces notification\n");
-
-	return ret;
-}
-
-early_initcall(exynos5_core_info_early_init);
 #endif
 
 

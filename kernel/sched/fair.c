@@ -53,6 +53,10 @@ int set_hmp_up_threshold(int value){
 int set_hmp_down_threshold(int value){
   return 0;
 }
+
+#endif
+
+#ifdef CONFIG_SCHED_CES
 static struct task_struct *task_of(struct sched_entity *se);
 static inline unsigned int hmp_cpu_is_fastest(int cpu);
 static inline unsigned int hmp_cpu_is_slowest(int cpu);
@@ -66,7 +70,7 @@ static inline unsigned int hmp_select_faster_cpu(struct task_struct *tsk,
 static inline unsigned int hmp_select_slower_cpu(struct task_struct *tsk,
 						 int cpu);
 
-#endif /* CONFIG_CES_SCHED_FIXUP */
+#endif /* CONFIG_SCHED_CES */
 
 
 #ifdef CONFIG_SCHED_CES
@@ -161,7 +165,7 @@ long ces_upmigration_do(struct task_struct* p,unsigned int load){
   return ret_Val;
 }
 
-#ifdef CONFIG_SCHED_CES_FIXUP
+#ifdef CONFIG_CES_SCHED_FIXUP
 #define AVG_LOAD 512
 long schedule_bigcore_ifavailable(struct task_struct*p){
   long retVal = 0;
@@ -4084,7 +4088,7 @@ static inline unsigned int hmp_select_slower_cpu(struct task_struct *tsk,
 
 
 
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 
 static inline void hmp_next_up_delay(struct sched_entity *se, int cpu)
 {
@@ -4221,9 +4225,9 @@ static int hmp_down_threshold_from_sysfs(int value)
 	return 0;
 }
 #endif /* CONFIG_HMP_VARIABLE_SCALE */
-#endif /* CONFIG_SCHED_HMP */
+#endif /* CONFIG_SCHED_HMP  || CONFIG_SCHED_CES */
  
-#if (defined(CONFIG_SCHED_HMP) && defined(CONFIG_HMP_VARIABLE_SCALE)) || defined(CONFIG_SCHED_CES)
+#if (defined(CONFIG_SCHED_HMP) && defined(CONFIG_HMP_VARIABLE_SCALE)) || (defined(CONFIG_SCHED_CES) && defined(CONFIG_HMP_VARIABLE_SCALE))
 static int hmp_boostpulse_from_sysfs(int value)
 {
 	unsigned long flags;

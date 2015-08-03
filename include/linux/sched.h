@@ -2710,7 +2710,7 @@ extern long ces_scheduleequalworkload_do(struct task_struct* p,unsigned int load
 #endif
 
 
-#ifdef CONFIG_SCHED_CES_FIXUP
+#ifdef CONFIG_CES_SCHED_FIXUP
 /*to utilizebig core from begining when hmp not in use*/
 extern long schedule_bigcore_ifavailable(struct task_struct* p); 
 #endif

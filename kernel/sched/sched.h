@@ -475,7 +475,7 @@ struct rq {
      as requested by the compiler.
    */
   struct task_struct *ces_migrate_task;
-#endif /* CONFIG_SCED_CES */
+#endif /* CONFIG_SCHED_CES */
 	/* cpu of this runqueue: */
 	int cpu;
 	int online;
