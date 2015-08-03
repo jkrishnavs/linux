@@ -1639,6 +1639,10 @@ static void __sched_fork(struct task_struct *p)
 		p->se.avg.usage_avg_sum = LOAD_AVG_MAX;
 	}
 #endif
+
+#ifdef CONFIG_SCHED_CES_FIXUP
+	schedule_bigcore_ifavailable(p);
+#endif
 /**
  * 
 _CES : Since this is a newly forked process, we also need to initialize
@@ -3878,7 +3882,7 @@ __setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio)
 	p->prio = rt_mutex_getprio(p);
 	if (rt_prio(p->prio)) {
 		p->sched_class = &rt_sched_class;
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 		/**
 		   _CES: HMP  when the priority changes, 
 		   they apply slow_cpu_mask why ?

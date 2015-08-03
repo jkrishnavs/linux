@@ -2709,6 +2709,11 @@ extern long ces_updateloadfactor_do(unsigned int newloadfactor);
 extern long ces_scheduleequalworkload_do(struct task_struct* p,unsigned int load);
 #endif
 
+
+#ifdef CONFIG_SCHED_CES_FIXUP
+/*to utilizebig core from begining when hmp not in use*/
+extern long schedule_bigcore_ifavailable(struct task_struct* p); 
+#endif
 #ifdef CONFIG_CGROUP_SCHED
 extern struct task_group root_task_group;
 #endif /* CONFIG_CGROUP_SCHED */

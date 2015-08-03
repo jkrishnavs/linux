@@ -686,7 +686,7 @@ static int can_enter_cluster_off(int cpu_id)
 {
 /** disable c3 state**/
 
-#if defined(CONFIG_SCHED_HMP)
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 	ktime_t now = ktime_get();
 	struct clock_event_device *dev;
 	int cpu;

@@ -149,7 +149,7 @@ long ces_upmigration_do(struct task_struct* p,unsigned int load){
      which is relatively free */  
   int target_cpu =  hmp_select_faster_cpu(p,cur_cpu);
   if(allow_ces_up_migration(cur_cpu,&target_cpu,p)){
-      /* we are goinng to usethe help of 
+      /* we are going to use the help of 
         int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
         in core.c for this
       */
@@ -161,7 +161,20 @@ long ces_upmigration_do(struct task_struct* p,unsigned int load){
   return ret_Val;
 }
 
+#ifdef CONFIG_SCHED_CES_FIXUP
+#define AVG_LOAD 512
+long schedule_bigcore_ifavailable(struct task_struct*p){
+  long retVal = 0;
+  int cur_cpu = task_cpu(p);
+  printk("The current alloted core is %d",cur_cpu);
+  if(cur_cpu<MAX_CPUS && cur_cpu >=0){
+    retVal = ces_upmigration_do(p,AVG_LOAD);
+    return retVal;
+  }
+  return -1;
+}
 
+#endif
 long ces_downmigration_do(struct task_struct * p, unsigned int load){
  int ret_Val=0;
   /*get current cpu of the task. defined in include/linux/sched.h */
@@ -3950,9 +3963,6 @@ static u64 hmp_boostpulse_endtime;
 static int hmp_boost_val;
 static int hmp_boostpulse;
 static DEFINE_RAW_SPINLOCK(hmp_boost_lock);
-#endif /* CONFIG_SCHED_HMP || CONFIG_SCHED_CES */
-#ifdef CONFIG_SCHED_HMP
-
 #define BOOT_BOOST_DURATION 40000000 /* microseconds */
 
 #ifdef CONFIG_SCHED_HMP_PRIO_FILTER
@@ -3960,7 +3970,7 @@ unsigned int hmp_up_prio = NICE_TO_PRIO(CONFIG_SCHED_HMP_PRIO_FILTER_VAL);
 #endif
 unsigned int hmp_next_up_threshold = 4096;
 unsigned int hmp_next_down_threshold = 4096;
-#endif /* CONFIG_SCHED_HMP */
+#endif /* CONFIG_SCHED_HMP || CONFIG_SCHED_CES */
 
 #if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 static inline int hmp_boost(void)
@@ -6645,7 +6655,7 @@ static int nohz_test_cpu(int cpu)
 static inline int find_new_ilb(int call_cpu)
 {
 	int ilb = cpumask_first(nohz.idle_cpus_mask);
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 	/* restrict nohz balancing to occur in the same hmp domain */
 	ilb = cpumask_first_and(nohz.idle_cpus_mask,
 			&((struct hmp_domain *)hmp_cpu_domain(call_cpu))->cpus);
@@ -6940,7 +6950,7 @@ static inline int nohz_kick_needed(struct rq *rq, int cpu)
 	if (time_before(now, nohz.next_balance))
 		return 0;
 
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 	/*
 	 * Bail out if there are no nohz CPUs in our
 	 * HMP domain, since we will move tasks between
@@ -7531,7 +7541,7 @@ void trigger_load_balance(struct rq *rq, int cpu)
 
 static void rq_online_fair(struct rq *rq)
 {
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 	hmp_online_cpu(rq->cpu);
 #endif
 	update_sysctl();
@@ -7539,7 +7549,7 @@ static void rq_online_fair(struct rq *rq)
 
 static void rq_offline_fair(struct rq *rq)
 {
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 	hmp_offline_cpu(rq->cpu);
 #endif
 	update_sysctl();
@@ -8010,7 +8020,7 @@ __init void init_sched_fair_class(void)
 	cpu_notifier(sched_ilb_notifier, 0);
 #endif
 
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES) 
 	hmp_cpu_mask_setup();
 
 #endif

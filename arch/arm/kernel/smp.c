@@ -745,7 +745,7 @@ static void flush_all_cpu_cache(void *info)
 	flush_cache_louis();
 }
 
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
 
 #include <asm/cputype.h>
 
