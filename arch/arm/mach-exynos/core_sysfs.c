@@ -202,7 +202,7 @@ static struct notifier_block hmp_nb = {
 };
 #endif 
 
-#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_SCHED_CES)
+#if defined(CONFIG_SCHED_HMP)
 static int __init exynos5_core_info_early_init(void)
 {
 	int ret = 0;

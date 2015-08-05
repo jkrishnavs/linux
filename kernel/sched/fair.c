@@ -46,14 +46,12 @@
 #include "sched.h"
 
 #ifdef CONFIG_CES_SCHED_FIXUP
-
 int set_hmp_up_threshold(int value){
   return 0;
 }
 int set_hmp_down_threshold(int value){
   return 0;
 }
-
 #endif
 
 #ifdef CONFIG_SCHED_CES
@@ -74,8 +72,6 @@ static inline unsigned int hmp_select_slower_cpu(struct task_struct *tsk,
 
 
 #ifdef CONFIG_SCHED_CES
-
-
 
 /** 
    F1.a function similar to hmp_down_migration
@@ -164,6 +160,8 @@ long ces_upmigration_do(struct task_struct* p,unsigned int load){
     }
   return ret_Val;
 }
+#endif /*ifdef CONFIG_SCHED_CES */
+
 
 #ifdef CONFIG_CES_SCHED_FIXUP
 #define AVG_LOAD 512
@@ -171,14 +169,17 @@ long schedule_bigcore_ifavailable(struct task_struct*p){
   long retVal = 0;
   int cur_cpu = task_cpu(p);
   printk("The current alloted core is %d",cur_cpu);
+  /*
   if(cur_cpu<MAX_CPUS && cur_cpu >=0){
     retVal = ces_upmigration_do(p,AVG_LOAD);
     return retVal;
   }
+  */
   return -1;
 }
-
 #endif
+
+#ifdef CONFIG_SCHED_CES
 long ces_downmigration_do(struct task_struct * p, unsigned int load){
  int ret_Val=0;
   /*get current cpu of the task. defined in include/linux/sched.h */
@@ -195,19 +196,17 @@ long ces_downmigration_do(struct task_struct * p, unsigned int load){
     return ret_Val;
 }
 long ces_scheduleequalworkload_do(struct task_struct* p,unsigned int load){
- int ret_Val=0;
-  /*get current cpu of the task. defined in include/linux/sched.h */
-  int cur_cpu = task_cpu(p);/*find current cpu */
-  /* get target cpu, in the required domain
-     which is relatively free */  
-  int target_cpu =  hmp_select_slower_cpu(p,cur_cpu);
-  if(allow_ces_down_migration(cur_cpu,target_cpu,p)){
+  int ret_Val=0;
+  int cur_cpu = task_cpu(p);
+  int target_cpu =  hmp_select_faster_cpu(p,cur_cpu);
+  printk("ces schedule equal workload called\n");
+  if(allow_ces_up_migration(cur_cpu,&target_cpu,p)){
     ret_Val = ces_migrate_task(p,cur_cpu,target_cpu);
-    }
-    if(ret_Val == 0){
-      printk("downmigration failed\n");    
-    }
-    return ret_Val;
+  }
+  if(ret_Val == 0){
+    printk("downmigration failed\n");    
+  }
+  return ret_Val;
 }
 
 /*
@@ -254,7 +253,6 @@ long ces_loadmigration_do(struct task_struct * p, unsigned int load){
  }
     return ret_Val;
 }
-
 
 
 static ATOMIC_NOTIFIER_HEAD(ces_task_migration_notifier);
@@ -4227,7 +4225,7 @@ static int hmp_down_threshold_from_sysfs(int value)
 #endif /* CONFIG_HMP_VARIABLE_SCALE */
 #endif /* CONFIG_SCHED_HMP  || CONFIG_SCHED_CES */
  
-#if (defined(CONFIG_SCHED_HMP) && defined(CONFIG_HMP_VARIABLE_SCALE)) || (defined(CONFIG_SCHED_CES) && defined(CONFIG_HMP_VARIABLE_SCALE))
+#if (defined(CONFIG_SCHED_HMP) && defined(CONFIG_HMP_VARIABLE_SCALE)) || (defined(CONFIG_SCHED_CES))
 static int hmp_boostpulse_from_sysfs(int value)
 {
 	unsigned long flags;

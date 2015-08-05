@@ -974,7 +974,7 @@ struct sched_avg {
 	s64 decay_count;
 	unsigned long load_avg_contrib;
 	unsigned long load_avg_ratio;
-#ifdef CONFIG_SCHED_HMP
+#if defined(CONFIG_SCHED_HMP) || defined(CONFIG_CES_SCHED_FIXUP)
         u64 hmp_last_up_migration; /** Clock since last up migration and last down migration**/
 	u64 hmp_last_down_migration;
 #endif
